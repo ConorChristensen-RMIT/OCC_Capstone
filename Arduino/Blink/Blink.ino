@@ -21,22 +21,22 @@
 
   https://www.arduino.cc/en/Tutorial/BuiltInExamples/Blink
 */
-
+double delay_ms;
 // the setup function runs once when you press reset or power the board
 void setup() {
   // initialize digital pin LED_BUILTIN as an output.
-  pinMode(LED_BUILTIN, OUTPUT);
-  camera_h = 720;
-  camera_hz = 30;
-  period_ms = 1000/(camera_hz*camera_h);
-  
+  pinMode(2, OUTPUT);
+  int camera_h = 720;
+  int camera_hz = 30;
+  double period_ms = 1000/(camera_hz*camera_h);
+  delay_ms = period_ms/2;
 }
 
 // the loop function runs over and over again forever
 void loop() {
   // TO KEEP 1 THEN 0 FOR 2 SEPERATE PERIODS
-  digitalWrite(LED_BUILTIN, HIGH);   // turn the LED on (HIGH is the voltage level)
-  delay(period_ms);                       // wait for a second
-  digitalWrite(LED_BUILTIN, LOW);    // turn the LED off by making the voltage LOW
-  delay(period_ms);                       // wait for a second
+  digitalWrite(2, HIGH);   // turn the LED on (HIGH is the voltage level)
+  delay(delay_ms);                       // wait for a second
+  digitalWrite(2, LOW);    // turn the LED off by making the voltage LOW
+  delay(delay_ms);                       // wait for a second
 }

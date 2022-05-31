@@ -79,9 +79,9 @@ def ReadLight():
         # Read image and process
         success, img_r = cap.read()
         img_g = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
-        # roi_i = getROIImage(img_g, roi_x, roi_y, roi_w, roi_h)
+        roi_i = getROIImage(img_g, roi_x, roi_y, roi_w, roi_h)
         img = light_reader.draw_region(img_g)
-        # th, roi_bin = cv2.threshold(roi_i, 128, 255, cv2.THRESH_OTSU)
+        th, roi_bin = cv2.threshold(roi_i, 128, 255, cv2.THRESH_OTSU)
 
         # Packet length Preamble+Payload+Parity = 7+32+1 = 40
         p_len = 40
@@ -90,7 +90,7 @@ def ReadLight():
 
         # Read the data
         ybuff = 3
-        out_arr = readBinPixels(img_g, cam_h, ybuff, hz, tx_Hz, p_len)
+        out_arr = readBinPixels(roi_bin, cam_h, ybuff, hz, tx_Hz, p_len)
         print(out_arr)
 
 
