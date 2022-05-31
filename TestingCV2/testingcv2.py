@@ -26,13 +26,14 @@ def readBinPixels(img, img_t_h, ybuff, img_Hz, tx_Hz, p_len):
     T_tx = 1 / tx_Hz
     T_t = 1 / img_Hz
     T_row = T_t / img_t_h
+
     img_h = img.shape[0]
     if img_h - 2 * ybuff * (T_tx / T_row) < p_len:
         raise Exception("Insufficient pixel-height")
     img_w = img.shape[1]
     img_c = img_w // 2
     output = []
-    if T_tx % T_row != 0 or T_tx < T_row:
+    if ((T_tx % T_row != 0) and (T_tx != T_row)) or T_tx < T_row:
         raise Exception("Incompatible Ftx and Fs")
     else:
         # Increment for loop by (T_tx//T_row) pixels because of transmission freq
@@ -58,14 +59,32 @@ def ReadLight():
     roi_w = 150
     roi_h = 150
 
-    cap = cv2.VideoCapture(0)  # Select web cam 0
-    cam_h, cam_w = 720, 1280
-    cap.set(3, cam_w)
-    cap.set(4, cam_h)
+    #cap = cv2.VideoCapture(1)  # Select web cam 0
+    fourcc = cv2.VideoWriter_fourcc('M', 'J', 'P', 'G')
+    cap = cv2.VideoCapture()
+    cap.open(0 + 1 + cv2.CAP_DSHOW)
+    cap.set(cv2.CAP_PROP_FOURCC, fourcc)
+    cam_w_4k = 3840
+    cam_h_4k = 2160
+    cam_w_1080 = 1920
+    cam_h_1080 = 1080
+    frame_rate_1080 = 30
+    frame_rate_4k = 30
+    cap.set(cv2.CAP_PROP_FRAME_WIDTH, cam_w_1080)
+    cap.set(cv2.CAP_PROP_FRAME_HEIGHT, cam_h_1080)
+    cap.set(cv2.CAP_PROP_FPS, frame_rate_1080)
+
+    #change on change of cam dims
+    cam_h = cam_h_1080
+    cam_w = cam_w_1080
+
+
+    # cap.set(3, cam_w)
+    # cap.set(4, cam_h)
     previous_time = 0
 
     light_reader = LightReader(roi_x, roi_y, roi_w, roi_h)
-    hz = cap.get(cv2.CAP_PROP_FPS)
+    hz = round(cap.get(cv2.CAP_PROP_FPS))
 
     while True:
         # Time the loop
@@ -79,9 +98,9 @@ def ReadLight():
         # Read image and process
         success, img_r = cap.read()
         img_g = cv2.cvtColor(img_r, cv2.COLOR_BGR2GRAY)
-        # roi_i = getROIImage(img_g, roi_x, roi_y, roi_w, roi_h)
+        roi_i = getROIImage(img_g, roi_x, roi_y, roi_w, roi_h)
         img = light_reader.draw_region(img_g)
-        # th, roi_bin = cv2.threshold(roi_i, 128, 255, cv2.THRESH_OTSU)
+        th, roi_bin = cv2.threshold(roi_i, 128, 255, cv2.THRESH_OTSU)
 
         # Packet length Preamble+Payload+Parity = 7+32+1 = 40
         p_len = 40
@@ -90,7 +109,7 @@ def ReadLight():
 
         # Read the data
         ybuff = 3
-        out_arr = readBinPixels(img_g, cam_h, ybuff, hz, tx_Hz, p_len)
+        out_arr = readBinPixels(roi_bin, cam_h, ybuff, hz, tx_Hz, p_len)
         print(out_arr)
 
 
